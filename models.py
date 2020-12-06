@@ -34,15 +34,21 @@ class Net(nn.Module):
         # convolutional layer 4; output: 256*23*23 (25-3+1 = 23); after pooling: output size is after pooling 256*11*11
         self.conv4 = nn.Conv2d(128,256,3)
         
+        # convolutional layer 5; output: 512*11*11 (11-1+1 = 11); after pooling: output size is after pooling 512*5*5
+        self.conv5 = nn.Conv2d(256,512,1)
+        
         # fully connected layer
-        self.fc1 = nn.Linear(256*11*11, 68*2)
-                
+        self.fc1 = nn.Linear(512*5*5, 4000)
+        self.fc2 = nn.Linear(4000, 4000)
+        self.fc3 = nn.Linear(4000, 4000)
+        self.fc4 = nn.Linear(4000, 68*2)
+        
         # drop out layer
         self.dropout = nn.Dropout(p=0.2)
         
     def forward(self, x):
         ## TODO: Define the feedforward behavior of this model
-        ## x is the input image and, as an example, here you may choose to include a pool/conv step:   
+        # convolutional layers   
         x = self.pool(F.relu(self.conv1(x)))
         #x = self.dropout(x)
         x = self.pool(F.relu(self.conv2(x)))
@@ -51,12 +57,17 @@ class Net(nn.Module):
         #x = self.dropout(x)
         x = self.pool(F.relu(self.conv4(x)))
         #x = self.dropout(x)
-
+        x = self.pool(F.relu(self.conv5(x)))
+        #x = self.dropout(x)
+        
         # prep for linear layer by flattening the feature maps into feature vectors
         x = x.view(x.size(0), -1)
         
-        # linear layer 
+        # dense layers 
         x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        x = self.fc4(x)
         
         # a modified x, having gone through all the layers of your model, should be returned
         
